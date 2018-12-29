@@ -6,8 +6,6 @@ import './App.css';
 class App extends Component {
   constructor(props) {
     super(props)
-    this.handleKeyDown = this.handleKeyDown.bind(this)
-    this.handleKeyUp = this.handleKeyUp.bind(this)
     this.state = {
       positions: [],
       shuffledPositions: [],
@@ -38,8 +36,11 @@ class App extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     const {
-      positions
+      positions,
+      shuffledPositions,
+      count
     } = this.state
+  
     if (positions.length > 0 && prevState.positions.length !== this.state.positions.length) {
       const shuffled = positions.sort(() => .5 - Math.random()) 
       let shuffledPositions =shuffled.slice(0,this.state.width)
@@ -47,9 +48,13 @@ class App extends Component {
         shuffledPositions
       })
     }
+
+    if (shuffledPositions[0] === 'Game over') {
+      alert(`Game over. Total moves to kill witches ${count}`)
+    }
   }
 
-  handleKeyDown(e) {
+  handleKeyDown = (e) => {
     const {
       x,
       y,
@@ -57,44 +62,49 @@ class App extends Component {
       bottomBorder,
       rightBorder,
       leftBorder,
-      count,
-      shuffledPositions
+      count
     } = this.state
+    
     if (e.keyCode === 38 && y > topBorder + 10){
       this.setState({
         up: true,
         y: y - 40,
         count: count + 1,
-        shuffledPositions: this.renderRemainingWitch(x, y, shuffledPositions)
+        
       })
     }
     if (e.keyCode === 39 && x < rightBorder - 37){
       this.setState({
         right: true,
         x: x + 40,
-        count: count + 1,
-        shuffledPositions: this.renderRemainingWitch(x, y, shuffledPositions)
+        count: count + 1
       })
     }
     if (e.keyCode === 40 && y < bottomBorder - 10){
       this.setState({
         down: true,
         y: y + 40,
-        count: count + 1,
-        shuffledPositions: this.renderRemainingWitch(x, y, shuffledPositions)
+        count: count + 1
       })
     }
     if (e.keyCode === 37 && x > leftBorder + 10) {
       this.setState({
         left: true,
         x: x - 40,
-        count: count + 1,
-        shuffledPositions: this.renderRemainingWitch(x, y, shuffledPositions)
+        count: count + 1
       })
     }
   }
 
-  handleKeyUp(e) {
+  handleKeyUp = (e) => {
+    const {
+      x,
+      y,
+      shuffledPositions
+    } = this.state
+    this.setState({
+      shuffledPositions: this.renderRemainingWitch(x, y, shuffledPositions)
+    })
     if (e.keyCode === 38){
       this.setState({
         up: false
@@ -127,6 +137,9 @@ class App extends Component {
     const pos = shuffledPositions.filter((pos) => {
       return Math.abs(x - pos.x) > 6 || Math.abs(y - pos.y) > 6
     })
+    if (pos.length === 0) {
+      return ['Game over']
+    }
     return pos
   }
 
@@ -153,11 +166,11 @@ class App extends Component {
     let table = []
 
     for (let i = 0; i < row; i++) {
-      let children = []
+      let columns = []
       for (let j = 0; j < col; j++) {
-        children.push(<td key={`td${j}`} ref={this.tableDataCellRef}></td>)
+        columns.push(<td key={`td${j}`} ref={this.tableDataCellRef}></td>)
       }
-      table.push(<tr key={`tr${i}`}>{children}</tr>)
+      table.push(<tr key={`tr${i}`}>{columns}</tr>)
     }
     return table
   }
